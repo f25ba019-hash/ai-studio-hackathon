@@ -154,19 +154,50 @@ async function loadReviews() {
                 : '';
 
             // XSS脆弱性（review_contentをエスケープせずにHTMLに挿入）
-            const reviewHtml = `
-                <div class="review-item" data-review-id="${review.review_id}">
-                    <div class="review-header">
-                        <span class="reviewer-name">${review.user_name}</span>
-                        <span class="review-date">${dateStr}</span>
-                    </div>
-                    <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
-                    <div class="review-text">${review.review_content}</div>
-                    ${photoHtml}
-                    ${deleteButtonHtml}
-                </div>
-            `;
-            reviewsList.insertAdjacentHTML('beforeend', reviewHtml);
+const reviewItem = document.createElement('div');
+reviewItem.className = 'review-item';
+reviewItem.dataset.reviewId = review.review_id;
+
+const header = document.createElement('div');
+header.className = 'review-header';
+
+const nameSpan = document.createElement('span');
+nameSpan.className = 'reviewer-name';
+nameSpan.textContent = review.user_name;
+
+const dateSpan = document.createElement('span');
+dateSpan.className = 'review-date';
+dateSpan.textContent = dateStr;
+
+header.appendChild(nameSpan);
+header.appendChild(dateSpan);
+
+const ratingDiv = document.createElement('div');
+ratingDiv.className = 'review-rating';
+ratingDiv.textContent =
+  '★'.repeat(review.rating) + '☆'.repeat(5 - review.rating);
+
+const textDiv = document.createElement('div');
+textDiv.className = 'review-text';
+textDiv.textContent = review.review_content;
+
+if (photoHtml) {
+  const photoWrapper = document.createElement('div');
+  photoWrapper.insertAdjacentHTML('beforeend', photoHtml);
+  reviewItem.appendChild(photoWrapper);
+}
+
+if (deleteButtonHtml) {
+  const deleteWrapper = document.createElement('div');
+  deleteWrapper.insertAdjacentHTML('beforeend', deleteButtonHtml);
+  reviewItem.appendChild(deleteWrapper);
+}
+
+reviewItem.appendChild(header);
+reviewItem.appendChild(ratingDiv);
+reviewItem.appendChild(textDiv);
+reviewsList.appendChild(reviewItem);
+
         });
     } catch (error) {
         console.error('レビューの取得に失敗しました:', error);
